@@ -82,4 +82,8 @@ result_id = dune.query_result_id(query_id=5508)
 
 # fetch query result
 data = dune.query_result(result_id)
+
+# save csv
+save_path = './'
+dune.query2csv(data, save_path)
 ```

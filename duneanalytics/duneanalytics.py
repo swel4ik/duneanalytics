@@ -3,6 +3,8 @@
 
 from requests import Session
 import logging
+import pandas as pd
+import os
 
 # --------- Constants --------- #
 
@@ -148,3 +150,17 @@ class DuneAnalytics:
         else:
             logger.error(response.text)
             return {}
+
+    def query2csv(self, query_data, save_path):
+        keys = query_data['data']['get_result_by_result_id'][0]['data'].keys()
+        json_data = {}
+
+        for key in keys:
+            json_data[key] = []
+
+        for row in query_data['data']['get_result_by_result_id']:
+            for key in json_data.keys():
+                json_data[key].append(row['data'][key])
+
+        csv_data = pd.DataFrame(json_data)
+        csv_data.to_csv(os.path.join(save_path, 'query_result.csv'))
