@@ -85,5 +85,10 @@ data = dune.query_result(result_id)
 
 # save csv
 save_path = './'
+
+# convert json data to csv
 dune.query2csv(data, save_path)
+
+# alternative end-to-end csv download with dune pro
+dune.download_csv(result_id, save_path)
 ```

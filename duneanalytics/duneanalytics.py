@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- #
 """This provides the DuneAnalytics class implementation"""
 
-from requests import Session
+from requests import Session, get
 import logging
 import pandas as pd
 import os
@@ -164,3 +164,38 @@ class DuneAnalytics:
 
         csv_data = pd.DataFrame(json_data)
         csv_data.to_csv(os.path.join(save_path, 'query_result.csv'))
+
+    def download_csv(self, result_id, save_path):
+        """
+        Fetch the query result id for a query
+
+        :param query_id: provide the query_id
+        :return:
+        """
+        download_data = {"operationName": "DownloadQuery",
+                         "variables": {"result_id": result_id},
+                         "query": "query DownloadQuery($result_id: uuid!) {\n  download_csv(result_id: $result_id) {\n    url\n    __typename\n  }\n}\n"
+                         }
+
+        self.session.headers.update({'authorization': f'Bearer {self.token}'})
+
+        response = self.session.post(GRAPH_URL, json=download_data)
+        if response.status_code == 200:
+            data = response.json()
+            logger.debug(data)
+            if 'errors' in data:
+                logger.error(data.get('errors'))
+                return None
+
+            csv_url = data['data']['download_csv']['url']
+            response = get(csv_url)
+            if response.status_code == 200:
+                with open(os.path.join(save_path, 'result.csv'), "wb") as handle:
+                    for data in response.iter_content():
+                        handle.write(data)
+            else:
+                logger.error(response.text)
+                return None
+        else:
+            logger.error(response.text)
+            return None
