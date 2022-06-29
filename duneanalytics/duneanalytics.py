@@ -34,6 +34,7 @@ class DuneAnalytics:
         self.csrf = None
         self.auth_refresh = None
         self.token = None
+        self.query_id = None
         self.username = username
         self.password = password
         self.session = Session()
@@ -103,6 +104,7 @@ class DuneAnalytics:
         :param query_id: provide the query_id
         :return:
         """
+        self.query_id = query_id
         query_data = {"operationName": "GetResult", "variables": {"query_id": query_id},
                       "query": "query GetResult($query_id: Int!, $parameters: [Parameter!]) "
                                "{\n  get_result_v2(query_id: $query_id, parameters: $parameters) "
@@ -163,7 +165,7 @@ class DuneAnalytics:
                 json_data[key].append(row['data'][key])
 
         csv_data = pd.DataFrame(json_data)
-        csv_data.to_csv(os.path.join(save_path, 'query_result.csv'))
+        csv_data.to_csv(os.path.join(save_path, f'{self.query_id}.csv'))
 
     def download_csv(self, result_id, save_path):
         """
@@ -190,7 +192,7 @@ class DuneAnalytics:
             csv_url = data['data']['download_csv']['url']
             response = get(csv_url)
             if response.status_code == 200:
-                with open(os.path.join(save_path, 'result.csv'), "wb") as handle:
+                with open(os.path.join(save_path, f'{self.query_id}.csv'), "wb") as handle:
                     for data in response.iter_content():
                         handle.write(data)
             else:
