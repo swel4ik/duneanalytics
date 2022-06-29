@@ -167,7 +167,7 @@ class DuneAnalytics:
         csv_data = pd.DataFrame(json_data)
         csv_data.to_csv(os.path.join(save_path, f'{self.query_id}.csv'))
 
-    def download_csv(self, result_id, save_path):
+    def download_csv(self, result_id, save_path='./'):
         """
         Fetch the query result id for a query
 
