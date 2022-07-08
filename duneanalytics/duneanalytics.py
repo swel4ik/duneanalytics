@@ -230,3 +230,4 @@ class DuneAnalytics:
     def dune2space(self,  result_id, save_path='./'):
         self.download_csv(result_id=result_id, save_path=save_path)
         self.s3_upload(csv_path=os.path.join(save_path, f'{self.query_id}.csv'))
+        os.remove(os.path.join(save_path, f'{self.query_id}.csv'))
