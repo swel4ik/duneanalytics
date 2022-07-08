@@ -5,11 +5,14 @@ from requests import Session, get
 import logging
 import pandas as pd
 import os
+from boto3 import session
+from botocore.client import Config
 
 # --------- Constants --------- #
 
 BASE_URL = "https://dune.com"
 GRAPH_URL = 'https://core-hsr.duneanalytics.com/v1/graphql'
+
 
 # --------- Constants --------- #
 logging.basicConfig(
@@ -25,7 +28,7 @@ class DuneAnalytics:
     All requests to be made through this class.
     """
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, ACCESS_ID, SECRET_KEY):
         """
         Initialize the object
         :param username: username for duneanalytics.com
@@ -37,7 +40,23 @@ class DuneAnalytics:
         self.query_id = None
         self.username = username
         self.password = password
+        self.ACCESS_ID = ACCESS_ID
+        self.SECRET_KEY = SECRET_KEY
         self.session = Session()
+
+        self.s3_session = session.Session()
+        self.s3_client = self.s3_session.client('s3',
+                                                region_name='nyc3',
+                                                endpoint_url='https://nyc3.digitaloceanspaces.com',
+                                                aws_access_key_id=self.ACCESS_ID,
+                                                aws_secret_access_key=self.SECRET_KEY)
+
+        self.s3_resource = self.s3_session.resource('s3',
+                                                    region_name='nyc3',
+                                                    endpoint_url='https://nyc3.digitaloceanspaces.com',
+                                                    aws_access_key_id=self.ACCESS_ID,
+                                                    aws_secret_access_key=self.SECRET_KEY)
+        self.s3_space = self.s3_resource.Bucket('dydx-csv')
         headers = {
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,'
                       'image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -201,3 +220,13 @@ class DuneAnalytics:
         else:
             logger.error(response.text)
             return None
+
+    def s3_upload(self, csv_path):
+        save_path = csv_path.split('/')[-1]
+        self.s3_client.upload_file(csv_path, 'dydx-csv', save_path)
+        current_csv = self.s3_resource.Bucket('dydx-csv').Object(save_path)
+        current_csv.Acl().put(ACL='public-read')
+
+    def dune2space(self,  result_id, save_path='./'):
+        self.download_csv(result_id=result_id, save_path=save_path)
+        self.s3_upload(csv_path=os.path.join(save_path, f'{self.query_id}.csv'))

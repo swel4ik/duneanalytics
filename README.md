@@ -61,13 +61,12 @@ You need to have `username` & `password` for [Dune Analytics](https://duneanalyt
 
 ```
 from duneanalytics import DuneAnalytics
-
-# initialize client
-dune = DuneAnalytics('username', 'password')
-
+```
+#### Initialize client and login
+```
+dune = DuneAnalytics('username', 'password', 'ACCESS_ID', 'SECRET_KEY')
 # try to login
 dune.login()
-
 # fetch token
 dune.fetch_auth_token()
 
@@ -82,7 +81,9 @@ result_id = dune.query_result_id(query_id=5508)
 
 # fetch query result
 data = dune.query_result(result_id)
-
+```
+#### Download and save csv from Dune
+```
 # save csv
 save_path = './'
 
@@ -91,4 +92,9 @@ dune.query2csv(data, save_path)
 
 # alternative end-to-end csv download with dune pro
 dune.download_csv(result_id, save_path)
+```
+#### End-to-end Dune to S3 uploading
+```
+result_id = dune.query_result_id(query_id=935947)
+dune.dune2space(result_id)
 ```
