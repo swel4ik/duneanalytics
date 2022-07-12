@@ -98,3 +98,13 @@ dune.download_csv(result_id, save_path)
 result_id = dune.query_result_id(query_id=935947)
 dune.dune2space(result_id)
 ```
+### Interaction with dydx exchange API
+`pip install dydx-v3-python`
+#### Get asset current price and upload to the s3 space
+```
+from duneanalytics import DuneAnalytics
+
+client = DuneAnalytics('username', 'password', 'ACCESS_ID', 'SECRET_KEY')
+client.dydx2space('ICP')
+# Output: ICP.csv file on s3 with current ICP price
+```

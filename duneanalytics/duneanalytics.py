@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- #
 """This provides the DuneAnalytics class implementation"""
-
+from dydx3 import Client
 from requests import Session, get
 import logging
 import pandas as pd
@@ -57,6 +57,7 @@ class DuneAnalytics:
                                                     aws_access_key_id=self.ACCESS_ID,
                                                     aws_secret_access_key=self.SECRET_KEY)
         self.s3_space = self.s3_resource.Bucket('dydx-csv')
+        self.dydx_client = Client(host='https://api.dydx.exchange')
         headers = {
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,'
                       'image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -231,3 +232,16 @@ class DuneAnalytics:
         self.download_csv(result_id=result_id, save_path=save_path)
         self.s3_upload(csv_path=os.path.join(save_path, f'{self.query_id}.csv'))
         os.remove(os.path.join(save_path, f'{self.query_id}.csv'))
+
+    # DYDX exchange API
+
+    def get_current_price(self, asset: str, save_path: str = './'):
+        markets = self.dydx_client.public.get_markets()
+        data = markets.data['markets'][f'{asset}-USD']['indexPrice']
+        with open(f'{os.path.join(save_path, asset)}.csv', 'w') as f:
+            f.write('price\n')
+            f.write(data)
+
+    def dydx2space(self, asset: str, save_path: str = './'):
+        self.get_current_price(asset=asset, save_path=save_path)
+        self.s3_upload(csv_path=os.path.join(save_path, f'{asset}.csv'))
