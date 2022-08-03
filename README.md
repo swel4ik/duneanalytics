@@ -98,6 +98,8 @@ dune.download_csv(result_id, save_path)
 result_id = dune.query_result_id(query_id=935947)
 dune.dune2space(result_id)
 ```
+#### Update permission for all files in s3 space
+`dune.update_permissions()`
 ### Interaction with dydx exchange API
 `pip install dydx-v3-python`
 #### Get asset current price and upload to the s3 space

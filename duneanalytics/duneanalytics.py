@@ -233,6 +233,10 @@ class DuneAnalytics:
         self.s3_upload(csv_path=os.path.join(save_path, f'{self.query_id}.csv'))
         os.remove(os.path.join(save_path, f'{self.query_id}.csv'))
 
+    def update_permissions(self):
+        bucket = self.s3_resource.Bucket('dydx-csv')
+        for bucket_object in bucket.objects.all():
+            bucket_object.Acl().put(ACL='public-read')
     # DYDX exchange API
 
     def get_current_price(self, asset: str, save_path: str = './'):
